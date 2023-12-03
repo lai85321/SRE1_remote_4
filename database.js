@@ -1,0 +1,32 @@
+const mysql = require("mysql2/promise");
+require("dotenv").config();
+const env = process.env.NODE_ENV;
+const { DB_HOST, DB_USERNAME, DB_PASSWORD, DB_DATABASE } = process.env;
+
+const mysqlConfig = {
+  development: {
+    // for EC2 machine
+    host: DB_HOST,
+    user: DB_USERNAME,
+    password: DB_PASSWORD,
+    database: DB_DATABASE,
+  },
+};
+
+const pool = mysql.createPool({
+  host: DB_HOST,
+  user: DB_USERNAME,
+  database: DB_DATABASE,
+  password: DB_PASSWORD,
+  waitForConnections: true,
+  connectionLimit: 10,
+  maxIdle: 10, // max idle connections, the default value is the same as `connectionLimit`
+  idleTimeout: 60000, // idle connections timeout, in milliseconds, the default value 60000
+  queueLimit: 0,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0,
+});
+
+console.log(`Mysql is connected, env is ${env}`);
+
+module.exports = pool;
