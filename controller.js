@@ -60,7 +60,15 @@ const queryData = async (req, res) => {
 
 const report = async (req, res) => {
   try {
-    return res.status(200).send({});
+    let response = {};
+    const data = await model.getReportList();
+    if (data.length === 0) {
+      return res.status(400).send({ error: `There is no data for report` });
+    }
+    console.log(data);
+    response.createdAt = Date.now();
+    response.trackingSummary = data;
+    return res.status(200).send({ data: response });
   } catch (err) {
     console.log(err);
   }

@@ -52,8 +52,19 @@ const getHistoryList = async (id) => {
   return result;
 };
 
+const getReportList = async () => {
+  const sql = `SELECT  t.status, count(l.tracking_status_id) count
+    FROM SRE_logistic.logistics l
+    left join SRE_logistic.tracking_status t on l.tracking_status_id = t.id
+group by l.tracking_status_id
+order by l.tracking_status_id`;
+  const [result] = await pool.query(sql);
+  return result;
+};
+
 module.exports = {
   createFakeData,
   getLogisticsList,
   getHistoryList,
+  getReportList,
 };
