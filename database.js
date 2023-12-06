@@ -3,16 +3,6 @@ require("dotenv").config();
 const env = process.env.NODE_ENV;
 const { DB_HOST, DB_USERNAME, DB_PASSWORD, DB_DATABASE } = process.env;
 
-const mysqlConfig = {
-  development: {
-    // for EC2 machine
-    host: DB_HOST,
-    user: DB_USERNAME,
-    password: DB_PASSWORD,
-    database: DB_DATABASE,
-  },
-};
-
 const pool = mysql.createPool({
   host: DB_HOST,
   user: DB_USERNAME,
@@ -27,6 +17,6 @@ const pool = mysql.createPool({
   keepAliveInitialDelay: 0,
 });
 
-console.log(`Mysql is connected, env is ${env}`);
+console.log(`Mysql is connected!`);
 
 module.exports = pool;
