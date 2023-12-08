@@ -1,6 +1,6 @@
 const mysql = require("mysql2/promise");
 require("dotenv").config();
-const env = process.env.NODE_ENV;
+
 const { DB_HOST, DB_USERNAME, DB_PASSWORD, DB_DATABASE } = process.env;
 
 const pool = mysql.createPool({

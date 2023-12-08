@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 const { PORT } = process.env;
+const redisClient = require("./redis");
 
 app.use("/api", [require("./route")]);
 // Error handling

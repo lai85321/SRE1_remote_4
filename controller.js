@@ -1,5 +1,6 @@
 const model = require("./model");
 const { faker } = require("@faker-js/faker");
+const redisClient = require("./redis");
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * max);
@@ -27,7 +28,6 @@ const createFakeData = async (req, res) => {
           history.status = getRandomInt(8);
           history.locationId = getRandomInt(15);
           logistics.history.push(history);
-          console.log(history);
         }
       }
       data.push(logistics);
@@ -43,15 +43,36 @@ const queryData = async (req, res) => {
   try {
     const sno = parseInt(req.query.sno);
     let data = {};
-    let logisticsRes = await model.getLogisticsList(sno);
-    if (logisticsRes.length === 0) {
-      return res
-        .status(400)
-        .send({ error: `There is no data for sno: ${sno}` });
+    const key = "queryPackage";
+    const cache = await redisClient.lRange(key, 0, -1);
+    if (cache.length == 0) {
+      let logisticsRes = await model.getLogisticsList(sno);
+      if (logisticsRes.length === 0) {
+        return res
+          .status(400)
+          .send({ error: `There is no data for sno: ${sno}` });
+      }
+      let historyRes = await model.getHistoryList(sno);
+      data = logisticsRes[0];
+      data.history = historyRes;
+      await redisClient.rPush(key, JSON.stringify(data));
     }
-    let historyRes = await model.getHistoryList(sno);
-    data = logisticsRes[0];
-    data.history = historyRes;
+    let idx = cache.findIndex((x) => JSON.parse(x).sno === sno);
+    if (idx !== -1) {
+      //find in cache
+      data = cache[idx];
+    } else {
+      let logisticsRes = await model.getLogisticsList(sno);
+      if (logisticsRes.length === 0) {
+        return res
+          .status(400)
+          .send({ error: `There is no data for sno: ${sno}` });
+      }
+      let historyRes = await model.getHistoryList(sno);
+      data = logisticsRes[0];
+      data.history = historyRes;
+      await redisClient.rPush(key, JSON.stringify(data));
+    }
     return res.status(200).send(data);
   } catch (err) {
     console.log(err);
@@ -65,7 +86,6 @@ const report = async (req, res) => {
     if (data.length === 0) {
       return res.status(400).send({ error: `There is no data for report` });
     }
-    console.log(data);
     response.createdAt = Date.now();
     response.trackingSummary = data;
     return res.status(200).send({ data: response });
