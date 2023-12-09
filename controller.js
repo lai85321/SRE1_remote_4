@@ -32,7 +32,7 @@ const createFakeData = async (req, res) => {
       }
       data.push(logistics);
     }
-    model.createFakeData(data);
+    await model.createFakeData(data);
     return res.status(200).send({ data });
   } catch (err) {
     console.log(err);
